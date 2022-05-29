@@ -36,7 +36,7 @@ def makeGrid(xlim,ylim,res):
     return(grid)
 
 
-res = 20
+res = 15
 gridLoc = makeGrid([0,1], [0,1], res)
 
 
@@ -67,13 +67,13 @@ alpha_prior = mean_prior**2 / var_prior
 beta_prior = mean_prior/var_prior
 
 sigma_prop_A = 0.3
-sigma_prop_rho = 0.1
+sigma_prop_rho = 0.01
 
 A_init = np.identity(2)
 
 rho_init = np.array([10,10])
 
-size = 100000
+size = 300000
 
 
 
