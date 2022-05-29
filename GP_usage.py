@@ -38,7 +38,7 @@ gridLoc = makeGrid([0,1], [0,1], res)
 rhos = np.array([0.5,100])
 covs = np.array([expCov(1,rho) for rho in rhos])
 
-mean = np.array([[0],[2]])
+mean = np.array([[0],[0]])
 
 A = np.array([[10,4],[-np.sqrt(116),0]])
 
