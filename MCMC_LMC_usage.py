@@ -36,14 +36,14 @@ def makeGrid(xlim,ylim,res):
     return(grid)
 
 
-res = 15
+res = 10
 gridLoc = makeGrid([0,1], [0,1], res)
 
 
 rhos = np.array([5,25])
 covs = np.array([expCov(1,rho) for rho in rhos])
 
-mean = np.array([[0],[0]])
+mean = np.array([[0],[2]])
 
 A = np.array([[0.02,-0.01],[-0.01,0.02]])
 
@@ -63,17 +63,25 @@ mean_prior = 10
 sd_prior = 8
 var_prior = sd_prior**2
 
+sigma_prior_mu = 10
+m_prior = np.array([0,0])
+
 alpha_prior = mean_prior**2 / var_prior
 beta_prior = mean_prior/var_prior
 
 sigma_prop_A = 0.3
-sigma_prop_rho = 0.01
+sigma_prop_rho = 0.1
 
-A_init = np.identity(2)
+# A_init = np.identity(2)
+A_init = np.linalg.inv(A)
 
-rho_init = np.array([10,10])
+# rho_init = np.array([10,10])
+rho_init = rhos
 
-size = 300000
+# mu_init = np.array([0,0])
+mu_init = mean[:,0]
+
+size = 1000000
 
 
 
@@ -81,7 +89,7 @@ size = 300000
 import time
 
 t0 = time.time()
-A_mcmc, rho_mcmc = MCMC_LMC(resLMC, gridLoc, sigma_prior, alpha_prior, beta_prior, sigma_prop_A, sigma_prop_rho, A_init, rho_init, size)
+A_mcmc, rho_mcmc, mu_mcmc = MCMC_LMC(resLMC, gridLoc, sigma_prior, alpha_prior, beta_prior, sigma_prior_mu, m_prior, sigma_prop_A, sigma_prop_rho, A_init, rho_init, mu_init, size)
 t1 = time.time()
 
 total1 = t1-t0
@@ -102,6 +110,14 @@ np.mean(rho_mcmc, axis=0)
 
 plt.plot(rho_mcmc[:,0])
 plt.plot(rho_mcmc[:,1])
+
+mean
+
+np.mean(mu_mcmc, axis=0)
+
+plt.plot(mu_mcmc[:,0])
+plt.plot(mu_mcmc[:,1])
+
 
 
 ### id constraints

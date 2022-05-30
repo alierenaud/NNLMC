@@ -42,11 +42,33 @@ def rho_move(detR_j_inv, A_j, Y, R_j_inv, rho_j, alpha_prior, beta_prior, sigma_
     else:
         return(rho_j, R_j_inv, detR_j_inv)
 
+def mu_move(A,n,p,Rs,m,sigma,Y):
+    
+    ind_n = np.ones(shape=n)
+    
+    Us = np.zeros(shape=(p,p,p))
+    vs = np.zeros(shape=(p,p))
+    
+    for j in range(p):
+        AjTAj = np.outer(A[j],A[j])
+        Rjm1indn = Rs[j] @ ind_n
+        
+        Us[j] = np.inner(ind_n,Rjm1indn) * AjTAj
+        vs[j] = AjTAj @ Y @ Rjm1indn
+        
+    M = np.sum(Us,axis=0) + 1/sigma**2*np.identity(p)
+    Minv = np.linalg.inv(M)
+    b = np.sum(vs,axis=0) + 1/sigma**2*m
+    
+    
+    
+    
+    
+    return(np.linalg.cholesky(Minv)@random.normal(size=p) + Minv@b)
 
 
 
-
-def MCMC_LMC(thisLMC, locs, sigma_prior, alpha_prior, beta_prior, sigma_prop_A, sigma_prop_rho, A_init, rho_init, size):
+def MCMC_LMC(thisLMC, locs, sigma_prior_A, alpha_prior, beta_prior, sigma_prior_mu, m_prior, sigma_prop_A, sigma_prop_rho, A_init, rho_init, mu_init, size):
     
     
     
@@ -57,11 +79,13 @@ def MCMC_LMC(thisLMC, locs, sigma_prior, alpha_prior, beta_prior, sigma_prop_A, 
     
     A_mcmc = np.zeros(shape=(size,p,p))
     rho_mcmc = np.zeros(shape=(size,p))
+    mu_mcmc = np.zeros(shape=(size,p))
     
     ## initial state
     
     A_mcmc[0] = A_init 
     rho_mcmc[0] = rho_init
+    mu_mcmc[0] = mu_init
     
     ## current state
     
@@ -70,26 +94,34 @@ def MCMC_LMC(thisLMC, locs, sigma_prior, alpha_prior, beta_prior, sigma_prop_A, 
     
     A_current = A_init
     
+    ind_n = np.ones(n)
+    centeredLMC_current = thisLMC - np.outer(mu_init,ind_n)
+    
     state = 1
     
     while state<size:
         
         for j in range(p):
             
-            A_current[j] = A_move(sigma_prior, A_current[j], np.linalg.inv(A_current)[:,j], n, p, thisLMC, Rinv_current[j], sigma_prop_A)
+            A_current[j] = A_move(sigma_prior_A, A_current[j], np.linalg.inv(A_current)[:,j], n, p, centeredLMC_current, Rinv_current[j], sigma_prop_A)
             
         
         A_mcmc[state] = A_current
         
         for j in range(p):
             
-            rho_mcmc[state,j], Rinv_current[j], detRinv_current[j] = rho_move(detRinv_current[j], A_current[j], thisLMC, Rinv_current[j], rho_mcmc[state-1,j], alpha_prior, beta_prior, sigma_prop_rho, locs)
+            rho_mcmc[state,j], Rinv_current[j], detRinv_current[j] = rho_move(detRinv_current[j], A_current[j], centeredLMC_current, Rinv_current[j], rho_mcmc[state-1,j], alpha_prior, beta_prior, sigma_prop_rho, locs)
+        
             
+        mu_mcmc[state] = mu_move(A_current, n, p, Rinv_current, m_prior, sigma_prior_mu, thisLMC)
+        
+        centeredLMC_current = thisLMC - np.outer(mu_mcmc[state],ind_n)
+        
         state+=1
         print(state)
 
     
-    return(A_mcmc, rho_mcmc)
+    return(A_mcmc, rho_mcmc, mu_mcmc)
 
 
 
