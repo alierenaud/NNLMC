@@ -36,7 +36,7 @@ def makeGrid(xlim,ylim,res):
     return(grid)
 
 
-res = 10
+res = 20
 gridLoc = makeGrid([0,1], [0,1], res)
 
 
@@ -81,7 +81,7 @@ rho_init = rhos
 # mu_init = np.array([0,0])
 mu_init = mean[:,0]
 
-size = 1000000
+size = 1000
 
 
 
