@@ -164,7 +164,52 @@ def rMultNorm(mu,Sigma):
     return(np.matmul(L,Z)+mu)
     
     
+def makeGrid(xlim,ylim,res):
+    grid = np.ndarray((res**2,2))
+    xlo = xlim[0]
+    xhi = xlim[1]
+    xrange = xhi - xlo
+    ylo = ylim[0]
+    yhi = ylim[1]
+    yrange = yhi - ylo
+    xs = np.arange(xlo, xhi, step=xrange/res) + xrange/res*0.5
+    ys = np.arange(ylo, yhi, step=yrange/res) + yrange/res*0.5
+    i=0
+    for x in xs:
+        j=0
+        for y in ys:
+            grid[i*res+j,:] = [x,y]
+            j+=1
+        i+=1
+    return(grid)
 
+def mexpit(v):
+    
+    ev = np.exp(v)
+    sv = np.sum(ev)
+    
+    return(ev/(1+sv))
+
+
+def mexpit_col(V):
+    P = np.zeros(shape = V.shape)
+    n = V.shape[1]
+    for i in range(n):
+        P[:,i] = mexpit(V[:,i])
+        
+    return(P)
+
+
+def multinomial_col(P):
+    
+    Pfull = np.vstack([P,1-np.sum(P,axis=0)])
+    Y = np.zeros(shape = Pfull.shape)
+    n = P.shape[1]
+    
+    for i in range(n):
+        Y[:,i] = random.multinomial(1, Pfull[:,i])
+        
+    return(Y[:-1])
     
     
     
