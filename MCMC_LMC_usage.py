@@ -36,14 +36,14 @@ def makeGrid(xlim,ylim,res):
     return(grid)
 
 
-res = 20
+res = 30
 gridLoc = makeGrid([0,1], [0,1], res)
 
 
 rhos = np.array([5,25])
 covs = np.array([expCov(1,rho) for rho in rhos])
 
-mean = np.array([[0],[2]])
+mean = np.array([[0],[10]])
 
 A = np.array([[0.02,-0.01],[-0.01,0.02]])
 
@@ -57,7 +57,7 @@ resLMC = newLMC.rLMC(gridLoc)
 
 
 
-sigma_prior = 30
+sigma_prior = 60
 
 mean_prior = 10
 sd_prior = 8
@@ -69,8 +69,8 @@ m_prior = np.array([0,0])
 alpha_prior = mean_prior**2 / var_prior
 beta_prior = mean_prior/var_prior
 
-sigma_prop_A = 0.3
-sigma_prop_rho = 0.1
+sigma_prop_A = 1
+sigma_prop_rho = 0.5
 
 # A_init = np.identity(2)
 A_init = np.linalg.inv(A)
@@ -81,7 +81,7 @@ rho_init = rhos
 # mu_init = np.array([0,0])
 mu_init = mean[:,0]
 
-size = 1000
+size = 10000
 
 
 
