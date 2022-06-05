@@ -10,7 +10,6 @@ from GP import LMC
 from GP import expCov
 import matplotlib.pyplot as plt
 from GP import makeGrid
-from GP import mexpit
 from GP import mexpit_col
 from GP import multinomial_col
 
@@ -33,6 +32,7 @@ newLMC = LMC(A, mean, covs)
 
 resLMC = newLMC.rLMC(gridLoc)
 expitLMC = mexpit_col(resLMC) ### mexpit transform
+mnLMC = multinomial_col(expitLMC) ### multinomial realization
 
 #### to make plot ####
 
@@ -148,5 +148,54 @@ axs[1,1].plot(x,cov2(x))
 plt.show()
 
 
+#### multinomial LMC
 
+
+
+
+
+
+
+fig, axs = plt.subplots(2, 2)
+
+imGP = mnLMC[0].reshape(res,res)
+
+x = np.linspace(0,1, res+1) 
+y = np.linspace(0,1, res+1) 
+X, Y = np.meshgrid(x,y) 
+
+axs[0,0].set_aspect('equal')
+# axs[0,0].pcolormesh(X,Y,imGP) 
+axs[0,0].pcolormesh(X,Y,imGP)
+
+
+axs[0,0].set_xlim(0,1)
+axs[0,0].set_ylim(0,1)
+
+
+imGP = mnLMC[1].reshape(res,res)
+
+x = np.linspace(0,1, res+1) 
+y = np.linspace(0,1, res+1) 
+X, Y = np.meshgrid(x,y) 
+
+axs[1,0].set_aspect('equal')
+# axs[1,0].pcolormesh(X,Y,imGP)
+axs[1,0].pcolormesh(X,Y,imGP)
+
+
+axs[1,0].set_xlim(0,1)
+axs[1,0].set_ylim(0,1)
+
+
+num = 500
+
+x = np.linspace(0,rangeCov, num) 
+
+
+axs[0,1].plot(x,cov1(x))
+axs[1,1].plot(x,cov2(x))
+
+
+plt.show()
 

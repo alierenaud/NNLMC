@@ -8,6 +8,7 @@ Created on Tue May 17 22:14:30 2022
 import numpy as np
 from numpy import random
 from scipy.spatial import distance_matrix
+from GP import mexpit_col
 
 
 
@@ -118,6 +119,118 @@ def MCMC_LMC(thisLMC, locs, sigma_prior_A, alpha_prior, beta_prior, sigma_prior_
         mu_mcmc[state] = mu_move(A_current, n, p, Rinv_current, m_prior, sigma_prior_mu, thisLMC)
         
         centeredLMC_current = thisLMC - np.outer(mu_mcmc[state],ind_n)
+        
+        state+=1
+        print(state)
+
+    
+    return(A_mcmc, rho_mcmc, mu_mcmc)
+
+
+
+
+def U_MN(V,Y):
+    
+    return(np.sum(np.log(1+np.sum(np.exp(V), axis=0)) - np.sum(V*Y, axis=0)))
+
+def U_MN_prime(V,Y):
+    
+    return(mexpit_col(V)-Y)
+
+
+
+def U_LMC(V,A,Rinvs,mu):
+    
+    p = A.shape[0]
+    Vmmu = V-mu
+    
+    AVmmu = [a@Vmmu for a in A]
+
+    return(1/2*np.sum([AVmmu[j]@Rinvs[j]@AVmmu[j] for j in range(p)]))
+
+def U_LMC_prime(V,A,Rinvs,mu):
+    
+    p = A.shape[0]
+    Vmmu = V-mu
+    
+    return(np.sum([np.outer(A[j],A[j])@Vmmu@Rinvs[j] for j in range(p)]))
+
+def V_move(sigma_prop_V,p,n,delta,L,V,Y,Rinvs,A,mu):
+    
+    V_mom_init = sigma_prop_V * random.normal(size=(p,n))
+    
+    V_mom = V_mom_init - delta/2*(U_MN_prime(V,Y)+U_LMC_prime(V,A,Rinvs,mu))
+    
+    V_pos = V + delta/sigma_prop_V**2*V_mom
+    
+    for l in range(L-1):
+        V_mom = V_mom - delta*(U_MN_prime(V_pos,Y)+U_LMC_prime(V_pos,A,Rinvs,mu))
+        
+        V_pos = V_pos + delta/sigma_prop_V**2*V_mom
+        
+    V_mom = V_mom - delta/2*(U_MN_prime(V_pos,Y)+U_LMC_prime(V_pos,A,Rinvs,mu))
+    
+    if random.uniform() < np.exp(-(U_MN(V_pos,Y) + U_LMC(V_pos,A,Rinvs,mu)) + (U_MN(V,Y) + U_LMC(V,A,Rinvs,mu)) - 1/2/sigma_prop_V**2*np.sum(V_mom**2) + 1/2/sigma_prop_V**2*np.sum(V_mom_init**2)):
+        return(V_pos)
+    else:
+        return(V)
+    
+
+
+def MCMC_LMC_MN(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, sigma_prior_mu, m_prior, sigma_prop_A, sigma_prop_rho, sigma_mom_V, delta, L, A_init, rho_init, mu_init, V_init, size):
+    
+    
+    
+    p = thisLMC_MN.shape[0] # nb of lines/types 
+    n = thisLMC_MN.shape[1] # nb of columns/locations
+
+    ## chain containers
+    
+    A_mcmc = np.zeros(shape=(size,p,p))
+    rho_mcmc = np.zeros(shape=(size,p))
+    mu_mcmc = np.zeros(shape=(size,p))
+    
+    ## initial state
+    
+    A_mcmc[0] = A_init 
+    rho_mcmc[0] = rho_init
+    mu_mcmc[0] = mu_init
+    
+    ## current state
+    
+    Rinv_current = np.array([np.linalg.inv(covMatrix(locs,locs,rho)) for rho in rho_init])
+    # detRinv_current = np.array([np.linalg.det(R) for R in Rinv_current])
+    
+    A_current = A_init
+    
+    V_current = V_init
+    
+    ind_n = np.ones(n)
+    centeredV_current = V_current - np.outer(mu_init,ind_n)
+    
+    state = 1
+    
+    while state<size:
+        
+        V_current = V_move(sigma_mom_V,p,n,delta,L,V_current,thisLMC_MN,Rinv_current,A_current,mu_mcmc[state-1]) 
+        
+        centeredV_current = V_current - np.outer(mu_mcmc[state-1],ind_n)
+        
+        for j in range(p):
+            
+            A_current[j] = A_move(sigma_prior_A, A_current[j], np.linalg.inv(A_current)[:,j], n, p, centeredV_current, Rinv_current[j], sigma_prop_A)
+            
+        
+        A_mcmc[state] = A_current
+        
+        for j in range(p):
+            
+            rho_mcmc[state,j], Rinv_current[j] = rho_move(A_current[j], centeredV_current, Rinv_current[j], rho_mcmc[state-1,j], alpha_prior, beta_prior, sigma_prop_rho, locs)
+        
+            
+        mu_mcmc[state] = mu_move(A_current, n, p, Rinv_current, m_prior, sigma_prior_mu, V_current)
+        
+
         
         state+=1
         print(state)
