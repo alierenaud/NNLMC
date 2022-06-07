@@ -14,29 +14,10 @@ from GP import LMC
 from GP import expCov
 
 
-##### Simulate LMC
-
-def makeGrid(xlim,ylim,res):
-    grid = np.ndarray((res**2,2))
-    xlo = xlim[0]
-    xhi = xlim[1]
-    xrange = xhi - xlo
-    ylo = ylim[0]
-    yhi = ylim[1]
-    yrange = yhi - ylo
-    xs = np.arange(xlo, xhi, step=xrange/res) + xrange/res*0.5
-    ys = np.arange(ylo, yhi, step=yrange/res) + yrange/res*0.5
-    i=0
-    for x in xs:
-        j=0
-        for y in ys:
-            grid[i*res+j,:] = [x,y]
-            j+=1
-        i+=1
-    return(grid)
+from GP import makeGrid
 
 
-res = 30
+res = 15
 gridLoc = makeGrid([0,1], [0,1], res)
 
 
@@ -81,7 +62,7 @@ rho_init = rhos
 # mu_init = np.array([0,0])
 mu_init = mean[:,0]
 
-size = 10000
+size = 1000
 
 
 

@@ -139,19 +139,23 @@ def U_MN_prime(V,Y):
 
 
 
-def U_LMC(V,A,Rinvs,mu):
+def U_LMC(V,A,Rinvs,mu,p,n):
     
-    p = A.shape[0]
-    Vmmu = V-mu
+    ind_n = np.ones(n)
+    
+
+    Vmmu = V-np.outer(mu,ind_n)
     
     AVmmu = [a@Vmmu for a in A]
 
     return(1/2*np.sum([AVmmu[j]@Rinvs[j]@AVmmu[j] for j in range(p)]))
 
-def U_LMC_prime(V,A,Rinvs,mu):
+def U_LMC_prime(V,A,Rinvs,mu,p,n):
     
-    p = A.shape[0]
-    Vmmu = V-mu
+    ind_n = np.ones(n)
+    
+
+    Vmmu = V-np.outer(mu,ind_n)
     
     return(np.sum([np.outer(A[j],A[j])@Vmmu@Rinvs[j] for j in range(p)]))
 
@@ -159,25 +163,25 @@ def V_move(sigma_prop_V,p,n,delta,L,V,Y,Rinvs,A,mu):
     
     V_mom_init = sigma_prop_V * random.normal(size=(p,n))
     
-    V_mom = V_mom_init - delta/2*(U_MN_prime(V,Y)+U_LMC_prime(V,A,Rinvs,mu))
+    V_mom = V_mom_init - delta/2*(U_MN_prime(V,Y)+U_LMC_prime(V,A,Rinvs,mu,p,n))
     
     V_pos = V + delta/sigma_prop_V**2*V_mom
     
     for l in range(L-1):
-        V_mom = V_mom - delta*(U_MN_prime(V_pos,Y)+U_LMC_prime(V_pos,A,Rinvs,mu))
+        V_mom = V_mom - delta*(U_MN_prime(V_pos,Y)+U_LMC_prime(V_pos,A,Rinvs,mu,p,n))
         
         V_pos = V_pos + delta/sigma_prop_V**2*V_mom
         
-    V_mom = V_mom - delta/2*(U_MN_prime(V_pos,Y)+U_LMC_prime(V_pos,A,Rinvs,mu))
+    V_mom = V_mom - delta/2*(U_MN_prime(V_pos,Y)+U_LMC_prime(V_pos,A,Rinvs,mu,p,n))
     
-    if random.uniform() < np.exp(-(U_MN(V_pos,Y) + U_LMC(V_pos,A,Rinvs,mu)) + (U_MN(V,Y) + U_LMC(V,A,Rinvs,mu)) - 1/2/sigma_prop_V**2*np.sum(V_mom**2) + 1/2/sigma_prop_V**2*np.sum(V_mom_init**2)):
+    if random.uniform() < np.exp(-(U_MN(V_pos,Y) + U_LMC(V_pos,A,Rinvs,mu,p,n)) + (U_MN(V,Y) + U_LMC(V,A,Rinvs,mu,p,n)) - 1/2/sigma_prop_V**2*np.sum(V_mom**2) + 1/2/sigma_prop_V**2*np.sum(V_mom_init**2)):
         return(V_pos)
     else:
         return(V)
     
 
 
-def MCMC_LMC_MN(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, sigma_prior_mu, m_prior, sigma_prop_A, sigma_prop_rho, sigma_mom_V, delta, L, A_init, rho_init, mu_init, V_init, size):
+def MCMC_LMC_MN(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, sigma_prior_mu, m_prior, sigma_prop_A, sigma_prop_rho, sigma_mom_V, delta, L, A_init, rho_init, mu_init, V_init, size, diag_V):
     
     
     
@@ -190,11 +194,17 @@ def MCMC_LMC_MN(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, sigma_
     rho_mcmc = np.zeros(shape=(size,p))
     mu_mcmc = np.zeros(shape=(size,p))
     
+    if diag_V:
+        V_mcmc = np.zeros(shape=(size,p,n))
+    
     ## initial state
     
     A_mcmc[0] = A_init 
     rho_mcmc[0] = rho_init
     mu_mcmc[0] = mu_init
+    
+    if diag_V:
+        V_mcmc[0] = V_init
     
     ## current state
     
@@ -213,6 +223,9 @@ def MCMC_LMC_MN(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, sigma_
     while state<size:
         
         V_current = V_move(sigma_mom_V,p,n,delta,L,V_current,thisLMC_MN,Rinv_current,A_current,mu_mcmc[state-1]) 
+        
+        if diag_V:
+            V_mcmc[state] = V_current
         
         centeredV_current = V_current - np.outer(mu_mcmc[state-1],ind_n)
         
@@ -235,8 +248,10 @@ def MCMC_LMC_MN(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, sigma_
         state+=1
         print(state)
 
-    
-    return(A_mcmc, rho_mcmc, mu_mcmc)
+    if diag_V:
+        return(A_mcmc, rho_mcmc, mu_mcmc, V_mcmc)
+    else: 
+        return(A_mcmc, rho_mcmc, mu_mcmc, 0)
 
 
 
