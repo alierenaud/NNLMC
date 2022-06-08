@@ -161,7 +161,7 @@ def U_LMC_prime(V,A,Rinvs,mu,p,n):
 
 def V_move(sigma_prop_V,p,n,delta,L,x,Y,Rinvs,A,mu):
     
-    v = random.normal(size=(p,n))
+    v = sigma_prop_V*random.normal(size=(p,n))
     
     xtemp=x
     vtemp=v
@@ -169,7 +169,7 @@ def V_move(sigma_prop_V,p,n,delta,L,x,Y,Rinvs,A,mu):
     
     for l in range(L):
         vstar = vtemp - delta/2*(U_MN_prime(xtemp,Y)+U_LMC_prime(xtemp,A,Rinvs,mu,p,n))
-        xtemp = xtemp + delta*vstar
+        xtemp = xtemp + delta*vstar/sigma_prop_V**2
         vtemp = vstar - delta/2*(U_MN_prime(xtemp,Y)+U_LMC_prime(xtemp,A,Rinvs,mu,p,n))
 
 
@@ -177,8 +177,8 @@ def V_move(sigma_prop_V,p,n,delta,L,x,Y,Rinvs,A,mu):
         
     # vnew=-vnew
     
-    lpi_old=-(U_MN(x,Y) + U_LMC(x,A,Rinvs,mu,p,n)) - 1/2*np.sum(v**2)
-    lpi_new=-(U_MN(xtemp,Y) + U_LMC(xtemp,A,Rinvs,mu,p,n)) - 1/2*np.sum(vtemp**2)
+    lpi_old=-(U_MN(x,Y) + U_LMC(x,A,Rinvs,mu,p,n)) - 1/2*np.sum(v**2)/sigma_prop_V**2
+    lpi_new=-(U_MN(xtemp,Y) + U_LMC(xtemp,A,Rinvs,mu,p,n)) - 1/2*np.sum(vtemp**2)/sigma_prop_V**2
     
     if np.log(random.uniform()) < lpi_new - lpi_old:
         return(xtemp)

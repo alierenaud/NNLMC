@@ -61,7 +61,7 @@ beta_prior = mean_prior/var_prior
 
 sigma_prop_A = 0.1
 sigma_prop_rho = 0.05
-sigma_mom_V = 500
+sigma_mom_V = 0.1
 
 delta = 0.005
 L = 20
@@ -82,7 +82,7 @@ n = mnLMC.shape[1]
 V_init = np.outer(mu_init,np.ones(n)) + 0.1*random.normal(size=(p,n))
 # V_init = resLMC
 
-size = 10000
+size = 1000
 
 
 
@@ -194,7 +194,7 @@ while i < size:
     
     plt.show()
     
-    i+=1000
+    i+=100
 
 
 fig = plt.figure()
@@ -257,7 +257,7 @@ while i < size:
     
     plt.show()
     
-    i+=1000
+    i+=100
 
 
 fig = plt.figure()
