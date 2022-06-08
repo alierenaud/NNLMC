@@ -132,6 +132,9 @@ class LMC:
     def rLMC(self, loc):
         vs = np.array([gp.rGP(loc) for gp in self.GPs])
         return(np.matmul(self.coregMat,vs)+self.mean)
+    
+    def rLMCcond():
+        return(0)
         
 
     

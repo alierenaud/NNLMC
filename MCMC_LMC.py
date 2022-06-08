@@ -157,27 +157,33 @@ def U_LMC_prime(V,A,Rinvs,mu,p,n):
 
     Vmmu = V-np.outer(mu,ind_n)
     
-    return(np.sum([np.outer(A[j],A[j])@Vmmu@Rinvs[j] for j in range(p)]))
+    return(np.sum([np.outer(A[j],A[j])@Vmmu@Rinvs[j] for j in range(p)],axis=0))
 
-def V_move(sigma_prop_V,p,n,delta,L,V,Y,Rinvs,A,mu):
+def V_move(sigma_prop_V,p,n,delta,L,x,Y,Rinvs,A,mu):
     
-    V_mom_init = sigma_prop_V * random.normal(size=(p,n))
+    v = random.normal(size=(p,n))
     
-    V_mom = V_mom_init - delta/2*(U_MN_prime(V,Y)+U_LMC_prime(V,A,Rinvs,mu,p,n))
+    xtemp=x
+    vtemp=v
+
     
-    V_pos = V + delta/sigma_prop_V**2*V_mom
-    
-    for l in range(L-1):
-        V_mom = V_mom - delta*(U_MN_prime(V_pos,Y)+U_LMC_prime(V_pos,A,Rinvs,mu,p,n))
+    for l in range(L):
+        vstar = vtemp - delta/2*(U_MN_prime(xtemp,Y)+U_LMC_prime(xtemp,A,Rinvs,mu,p,n))
+        xtemp = xtemp + delta*vstar
+        vtemp = vstar - delta/2*(U_MN_prime(xtemp,Y)+U_LMC_prime(xtemp,A,Rinvs,mu,p,n))
+
+
+
         
-        V_pos = V_pos + delta/sigma_prop_V**2*V_mom
-        
-    V_mom = V_mom - delta/2*(U_MN_prime(V_pos,Y)+U_LMC_prime(V_pos,A,Rinvs,mu,p,n))
+    # vnew=-vnew
     
-    if random.uniform() < np.exp(-(U_MN(V_pos,Y) + U_LMC(V_pos,A,Rinvs,mu,p,n)) + (U_MN(V,Y) + U_LMC(V,A,Rinvs,mu,p,n)) - 1/2/sigma_prop_V**2*np.sum(V_mom**2) + 1/2/sigma_prop_V**2*np.sum(V_mom_init**2)):
-        return(V_pos)
+    lpi_old=-(U_MN(x,Y) + U_LMC(x,A,Rinvs,mu,p,n)) - 1/2*np.sum(v**2)
+    lpi_new=-(U_MN(xtemp,Y) + U_LMC(xtemp,A,Rinvs,mu,p,n)) - 1/2*np.sum(vtemp**2)
+    
+    if np.log(random.uniform()) < lpi_new - lpi_old:
+        return(xtemp)
     else:
-        return(V)
+        return(x)
     
 
 
@@ -246,7 +252,7 @@ def MCMC_LMC_MN(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, sigma_
 
         
         state+=1
-        print(state)
+        # print(state)
 
     if diag_V:
         return(A_mcmc, rho_mcmc, mu_mcmc, V_mcmc)
