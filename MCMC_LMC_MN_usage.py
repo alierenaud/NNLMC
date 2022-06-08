@@ -28,10 +28,10 @@ res = 20
 gridLoc = makeGrid([0,1], [0,1], res)
 
 
-rhos = np.array([1,10])
+rhos = np.array([2,10])
 covs = np.array([expCov(1,rho) for rho in rhos])
 
-mean = np.array([[0],[0]])
+mean = np.array([[-1],[-1]])
 
 A = np.array([[4,3],[-5,0]])/10
 
@@ -49,8 +49,8 @@ mnLMC = multinomial_col(expitLMC) ### multinomial realization
 
 sigma_prior = 10 ### for A
 
-mean_prior = 8
-sd_prior = 6
+mean_prior = 6
+sd_prior = 4
 var_prior = sd_prior**2
 
 sigma_prior_mu = 10
@@ -60,7 +60,7 @@ alpha_prior = mean_prior**2 / var_prior
 beta_prior = mean_prior/var_prior
 
 sigma_prop_A = 0.1
-sigma_prop_rho = 0.1
+sigma_prop_rho = 0.05
 sigma_mom_V = 500
 
 delta = 0.005
@@ -82,7 +82,7 @@ n = mnLMC.shape[1]
 V_init = np.outer(mu_init,np.ones(n)) + 0.1*random.normal(size=(p,n))
 # V_init = resLMC
 
-size = 100000
+size = 10000
 
 
 
@@ -194,7 +194,7 @@ while i < size:
     
     plt.show()
     
-    i+=10000
+    i+=1000
 
 
 fig = plt.figure()
@@ -257,7 +257,7 @@ while i < size:
     
     plt.show()
     
-    i+=10000
+    i+=1000
 
 
 fig = plt.figure()

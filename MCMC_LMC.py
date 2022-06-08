@@ -169,22 +169,19 @@ def V_move(sigma_prop_V,p,n,delta,L,x,Y,Rinvs,A,mu):
     
     for l in range(L):
         vstar = vtemp - delta/2*(U_MN_prime(xtemp,Y)+U_LMC_prime(xtemp,A,Rinvs,mu,p,n))
-        xnew = xtemp + delta*vstar
-        vnew = vstar - delta/2*(U_MN_prime(xnew,Y)+U_LMC_prime(xnew,A,Rinvs,mu,p,n))
-        xtemp = xnew
-        vtemp = vnew
-        if np.sum([xnew>200]) > 0:
-            print("tabarnak")
+        xtemp = xtemp + delta*vstar
+        vtemp = vstar - delta/2*(U_MN_prime(xtemp,Y)+U_LMC_prime(xtemp,A,Rinvs,mu,p,n))
+
 
 
         
-    vnew=-vnew
+    # vnew=-vnew
     
     lpi_old=-(U_MN(x,Y) + U_LMC(x,A,Rinvs,mu,p,n)) - 1/2*np.sum(v**2)
-    lpi_new=-(U_MN(xnew,Y) + U_LMC(xnew,A,Rinvs,mu,p,n)) - 1/2*np.sum(vnew**2)
+    lpi_new=-(U_MN(xtemp,Y) + U_LMC(xtemp,A,Rinvs,mu,p,n)) - 1/2*np.sum(vtemp**2)
     
     if np.log(random.uniform()) < lpi_new - lpi_old:
-        return(xnew)
+        return(xtemp)
     else:
         return(x)
     
