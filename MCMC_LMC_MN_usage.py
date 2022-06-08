@@ -24,16 +24,16 @@ from GP import mexpit_col
 from GP import multinomial_col
 
 
-res = 10
+res = 20
 gridLoc = makeGrid([0,1], [0,1], res)
 
 
 rhos = np.array([1,10])
 covs = np.array([expCov(1,rho) for rho in rhos])
 
-mean = np.array([[-1],[-1]])
+mean = np.array([[0],[0]])
 
-A = np.array([[4,3],[-5,0]])/5
+A = np.array([[4,3],[-5,0]])/10
 
 
 newLMC = LMC(A, mean, covs)
@@ -60,11 +60,11 @@ alpha_prior = mean_prior**2 / var_prior
 beta_prior = mean_prior/var_prior
 
 sigma_prop_A = 0.1
-sigma_prop_rho = 0.5
+sigma_prop_rho = 0.1
 sigma_mom_V = 500
 
-delta = 0.1
-L = 50
+delta = 0.005
+L = 20
 
 # A_init = np.identity(2)
 A_init = np.linalg.inv(A)
@@ -82,7 +82,7 @@ n = mnLMC.shape[1]
 V_init = np.outer(mu_init,np.ones(n)) + 0.1*random.normal(size=(p,n))
 # V_init = resLMC
 
-size = 10000
+size = 100000
 
 
 
@@ -97,44 +97,49 @@ t1 = time.time()
 total1 = t1-t0
 
 
-# np.linalg.inv(A)
+print(np.linalg.inv(A))
 
-# np.mean(A_mcmc, axis=0)
+print(np.mean(A_mcmc, axis=0))
 
-# plt.plot(A_mcmc[:,0,0])
-# plt.plot(A_mcmc[:,0,1])
-# plt.plot(A_mcmc[:,1,0])
-# plt.plot(A_mcmc[:,1,1])
+plt.plot(A_mcmc[:,0,0])
+plt.plot(A_mcmc[:,0,1])
+plt.plot(A_mcmc[:,1,0])
+plt.plot(A_mcmc[:,1,1])
 
-# rhos
+plt.show()
 
-# np.mean(rho_mcmc, axis=0)
+print(rhos)
 
-# plt.plot(rho_mcmc[:,0])
-# plt.plot(rho_mcmc[:,1])
+print(np.mean(rho_mcmc, axis=0))
 
-# mean
+plt.plot(rho_mcmc[:,0])
+plt.plot(rho_mcmc[:,1])
 
-# np.mean(mu_mcmc, axis=0)
+plt.show()
 
-# plt.plot(mu_mcmc[:,0])
-# plt.plot(mu_mcmc[:,1])
+print(mean)
 
+print(np.mean(mu_mcmc, axis=0))
 
-plt.plot(V_mcmc[:,0,0])
-plt.plot(V_mcmc[:,1,0])
+plt.plot(mu_mcmc[:,0])
+plt.plot(mu_mcmc[:,1])
 
-mnLMC[:,0]
+plt.show()
 
-def nbMove(V):
-    n=0
-    lgth = V.shape[0]
-    for i in range(lgth-1):
-        if V[i]!=V[i+1]:
-            n+=1
-    return(n)
+# plt.plot(V_mcmc[:,0,0])
+# plt.plot(V_mcmc[:,1,0])
 
-nbMove(V_mcmc[:,0,0])
+# mnLMC[:,0]
+
+# def nbMove(V):
+#     n=0
+#     lgth = V.shape[0]
+#     for i in range(lgth-1):
+#         if V[i]!=V[i+1]:
+#             n+=1
+#     return(n)
+
+# nbMove(V_mcmc[:,0,0])
 
 
 
@@ -153,71 +158,142 @@ for i in range(n):
 
 
 
-fig, axs = plt.subplots(2, 2)
+
+
+
+meanLMC = np.mean(V_mcmc, axis=0)
+
+
+########
+
+
+
+
+
+
+
+i=0
+while i < size:
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_aspect('equal')
+    
+    imGP = V_mcmc[i,0].reshape(res,res)
+    
+    x = np.linspace(0,1, res+1) 
+    y = np.linspace(0,1, res+1) 
+    X, Y = np.meshgrid(x,y) 
+        
+    
+    ax.set_aspect('equal')
+        
+    ff = ax.pcolormesh(X,Y,imGP)
+    
+    fig.colorbar(ff) 
+    
+    plt.show()
+    
+    i+=10000
+
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.set_aspect('equal')
 
 imGP = resLMC[0].reshape(res,res)
 
 x = np.linspace(0,1, res+1) 
 y = np.linspace(0,1, res+1) 
 X, Y = np.meshgrid(x,y) 
+    
 
-axs[0,0].set_aspect('equal')
-# axs[0,0].pcolormesh(X,Y,imGP) 
-axs[0,0].pcolormesh(X,Y,imGP)
+ax.set_aspect('equal')
+    
+ff = ax.pcolormesh(X,Y,imGP)
 
+fig.colorbar(ff) 
 
-axs[0,0].set_xlim(0,1)
-axs[0,0].set_ylim(0,1)
+plt.show()   
 
-
-
-
-imGP = resLMC[1].reshape(res,res)
-
-x = np.linspace(0,1, res+1) 
-y = np.linspace(0,1, res+1) 
-X, Y = np.meshgrid(x,y) 
-
-axs[0,1].set_aspect('equal')
-# axs[0,0].pcolormesh(X,Y,imGP) 
-axs[0,1].pcolormesh(X,Y,imGP)
-
-
-axs[0,1].set_xlim(0,1)
-axs[0,1].set_ylim(0,1)
-
-
-meanLMC = np.mean(V_mcmc, axis=0)
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.set_aspect('equal')
 
 imGP = meanLMC[0].reshape(res,res)
 
 x = np.linspace(0,1, res+1) 
 y = np.linspace(0,1, res+1) 
 X, Y = np.meshgrid(x,y) 
+    
 
-axs[1,0].set_aspect('equal')
-# axs[0,0].pcolormesh(X,Y,imGP) 
-axs[1,0].pcolormesh(X,Y,imGP)
+ax.set_aspect('equal')
+    
+ff = ax.pcolormesh(X,Y,imGP)
+
+fig.colorbar(ff) 
+
+plt.show() 
+    
+i=0
+while i < size:
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_aspect('equal')
+    
+    imGP = V_mcmc[i,1].reshape(res,res)
+    
+    x = np.linspace(0,1, res+1) 
+    y = np.linspace(0,1, res+1) 
+    X, Y = np.meshgrid(x,y) 
+        
+    
+    ax.set_aspect('equal')
+        
+    ff = ax.pcolormesh(X,Y,imGP)
+    
+    fig.colorbar(ff) 
+    
+    plt.show()
+    
+    i+=10000
 
 
-axs[1,0].set_xlim(0,1)
-axs[1,0].set_ylim(0,1)
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.set_aspect('equal')
+
+imGP = resLMC[1].reshape(res,res)
+
+x = np.linspace(0,1, res+1) 
+y = np.linspace(0,1, res+1) 
+X, Y = np.meshgrid(x,y) 
+    
+
+ax.set_aspect('equal')
+    
+ff = ax.pcolormesh(X,Y,imGP)
+
+fig.colorbar(ff) 
+
+plt.show()
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.set_aspect('equal')
 
 imGP = meanLMC[1].reshape(res,res)
 
 x = np.linspace(0,1, res+1) 
 y = np.linspace(0,1, res+1) 
 X, Y = np.meshgrid(x,y) 
+    
 
-axs[1,1].set_aspect('equal')
-# axs[0,0].pcolormesh(X,Y,imGP) 
-axs[1,1].pcolormesh(X,Y,imGP)
+ax.set_aspect('equal')
+    
+ff = ax.pcolormesh(X,Y,imGP)
 
-
-axs[1,1].set_xlim(0,1)
-axs[1,1].set_ylim(0,1)
+fig.colorbar(ff) 
 
 plt.show()
-
-
-
