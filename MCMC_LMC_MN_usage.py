@@ -12,34 +12,32 @@ from MCMC_LMC import MCMC_LMC_MN
 import matplotlib.pyplot as plt
 
 
-from GP import LMC
-from GP import expCov
-
-
+from GP import expCorr
+from GP import rLMC
 from GP import makeGrid
-
-
-
 from GP import mexpit_col
 from GP import multinomial_col
 
 
+
 res = 20
 gridLoc = makeGrid([0,1], [0,1], res)
+n = gridLoc.shape[0]
 
 
 rhos = np.array([2,10])
-covs = np.array([expCov(1,rho) for rho in rhos])
+corrFuncs = np.array([expCorr(rho) for rho in rhos])
 
-mean = np.array([[-1],[-1]])
+mu = np.array([-1,-1])
+mean = np.outer(mu,np.ones(n))
 
 A = np.array([[4,3],[-5,0]])/10
 
 
-newLMC = LMC(A, mean, covs)
 
 
-resLMC = newLMC.rLMC(gridLoc)
+
+resLMC = rLMC(A, corrFuncs, mean, gridLoc)
 expitLMC = mexpit_col(resLMC) ### mexpit transform
 mnLMC = multinomial_col(expitLMC) ### multinomial realization
 
@@ -59,9 +57,9 @@ m_prior = np.array([0,0])
 alpha_prior = mean_prior**2 / var_prior
 beta_prior = mean_prior/var_prior
 
-sigma_prop_A = 0.1
-sigma_prop_rho = 0.05
-sigma_mom_V = 0.1
+sigma_prop_A = 0.2
+sigma_prop_rho = 0.1
+sigma_mom_V = 0.5
 
 delta = 0.005
 L = 20
@@ -82,7 +80,7 @@ n = mnLMC.shape[1]
 V_init = np.outer(mu_init,np.ones(n)) + 0.1*random.normal(size=(p,n))
 # V_init = resLMC
 
-size = 1000
+size = 4000
 
 
 
@@ -117,7 +115,7 @@ plt.plot(rho_mcmc[:,1])
 
 plt.show()
 
-print(mean)
+print(mu)
 
 print(np.mean(mu_mcmc, axis=0))
 

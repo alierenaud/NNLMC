@@ -10,29 +10,30 @@ from MCMC_LMC import MCMC_LMC
 import matplotlib.pyplot as plt
 
 
-from GP import LMC
-from GP import expCov
-
-
+from GP import expCorr
+from GP import rLMC
 from GP import makeGrid
+
 
 
 res = 15
 gridLoc = makeGrid([0,1], [0,1], res)
+n = gridLoc.shape[0]
 
 
 rhos = np.array([5,25])
-covs = np.array([expCov(1,rho) for rho in rhos])
+corrFuncs = np.array([expCorr(rho) for rho in rhos])
 
-mean = np.array([[0],[10]])
+mu = np.array([0,2])
+mean = np.outer(mu,np.ones(n))
 
 A = np.array([[0.02,-0.01],[-0.01,0.02]])
 
 
-newLMC = LMC(A, mean, covs)
 
 
-resLMC = newLMC.rLMC(gridLoc)
+
+resLMC = rLMC(A, corrFuncs, mean, gridLoc)
 
 ###################
 
@@ -76,59 +77,64 @@ t1 = time.time()
 total1 = t1-t0
 
 
-np.linalg.inv(A)
+print(np.linalg.inv(A))
 
-np.mean(A_mcmc, axis=0)
+print(np.mean(A_mcmc, axis=0))
 
 plt.plot(A_mcmc[:,0,0])
 plt.plot(A_mcmc[:,0,1])
 plt.plot(A_mcmc[:,1,0])
 plt.plot(A_mcmc[:,1,1])
 
-rhos
+plt.show()
 
-np.mean(rho_mcmc, axis=0)
+print(rhos)
+
+print(np.mean(rho_mcmc, axis=0))
 
 plt.plot(rho_mcmc[:,0])
 plt.plot(rho_mcmc[:,1])
 
-mean
+plt.show()
 
-np.mean(mu_mcmc, axis=0)
+print(mu)
+
+print(np.mean(mu_mcmc, axis=0))
 
 plt.plot(mu_mcmc[:,0])
 plt.plot(mu_mcmc[:,1])
 
+plt.show()
 
 
-### id constraints
+# ### id constraints
 
-rho_mcmc = np.array([np.sort(rhos) for rhos in rho_mcmc])
+# rho_mcmc = np.array([np.sort(rhos) for rhos in rho_mcmc])
 
-rhos
+# rhos
 
-np.mean(rho_mcmc, axis=0)
+# np.mean(rho_mcmc, axis=0)
 
-plt.plot(rho_mcmc[:,0])
-plt.plot(rho_mcmc[:,1])
+# plt.plot(rho_mcmc[:,0])
+# plt.plot(rho_mcmc[:,1])
 
-ordre = np.array([np.argsort(rhos) for rhos in rho_mcmc])
+# ordre = np.array([np.argsort(rhos) for rhos in rho_mcmc])
 
-for i in range(size):
+# for i in range(size):
     
-    A_mcmc[i] = np.transpose([np.sign(A_mcmc[i,:,0])]) * A_mcmc[i]
-    A_mcmc[i] = A_mcmc[i,ordre[i]]
+#     A_mcmc[i] = np.transpose([np.sign(A_mcmc[i,:,0])]) * A_mcmc[i]
+#     A_mcmc[i] = A_mcmc[i,ordre[i]]
     
     
     
-np.linalg.inv(A)
+# np.linalg.inv(A)
 
-np.mean(A_mcmc, axis=0)
+# np.mean(A_mcmc, axis=0)
 
-plt.plot(A_mcmc[:,0,0])
-plt.plot(A_mcmc[:,0,1])
-plt.plot(A_mcmc[:,1,0])
-plt.plot(A_mcmc[:,1,1])    
+# plt.plot(A_mcmc[:,0,0])
+# plt.plot(A_mcmc[:,0,1])
+# plt.plot(A_mcmc[:,1,0])
+# plt.plot(A_mcmc[:,1,1])    
 
 
-###
+# ###

@@ -6,9 +6,9 @@ Created on Mon May  9 12:31:57 2022
 """
 
 import numpy as np
-from GP import LMC
-from GP import expCov
 import matplotlib.pyplot as plt
+from GP import expCorr
+from GP import rLMC
 from GP import makeGrid
 from GP import mexpit_col
 from GP import multinomial_col
@@ -17,20 +17,21 @@ from GP import multinomial_col
 
 res = 100
 gridLoc = makeGrid([0,1], [0,1], res)
-
+n = gridLoc.shape[0]
 
 rhos = np.array([1,10])
-covs = np.array([expCov(1,rho) for rho in rhos])
+corrFuncs = np.array([expCorr(rho) for rho in rhos])
 
-mean = np.array([[-1],[-1]])
+mu = np.array([-1,-1])
+mean = np.outer(mu,np.ones(n))
 
 A = np.array([[4,3],[-5,0]])/5
 
 
-newLMC = LMC(A, mean, covs)
 
 
-resLMC = newLMC.rLMC(gridLoc)
+
+resLMC = rLMC(A, corrFuncs, mean, gridLoc)
 expitLMC = mexpit_col(resLMC) ### mexpit transform
 mnLMC = multinomial_col(expitLMC) ### multinomial realization
 
