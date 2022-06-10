@@ -28,6 +28,28 @@ def rLMC(A, corrFuncs, mean, locs):
         
     return( A @ Xs + mean)
 
+def rCondLMC(A, corrFuncs, meanOld, meanNew, locsOld, locsNew, Rinvs, Yold):
+    
+    p = A.shape[0]
+    k = locsNew.shape[0]
+    
+    rs = np.array([ corrFuncs[j](locsOld,locsNew) for j in range(p) ])
+    Rs_prime = np.array([ corrFuncs[j](locsNew,locsNew) for j in range(p) ])
+    
+    Rinvsrs = np.array([ Rinvs[j]@rs[j] for j in range(p) ])
+    
+    Cs = np.array([ np.linalg.cholesky(Rs_prime[j] - np.transpose(rs[j])@Rinvsrs[j]) for j in range(p) ])
+    
+    Xs_old = np.linalg.inv(A)@(Yold - meanOld)
+    
+    
+    
+    
+    
+    return(A @ np.array([ Cs[j]@random.normal(size=k) + Xs_old[j]@Rinvsrs[j] for j in range(p)]) + meanNew)
+        
+        
+
 
 def expCorr(rho):
     def evalCov(x,y):

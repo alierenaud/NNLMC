@@ -261,6 +261,84 @@ def MCMC_LMC_MN(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, sigma_
 
 
 
+def locs_move():
+    
+    
+    
+    return(0)
+
+
+def MCMC_LMC_MN_POIS(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, sigma_prior_mu, m_prior, sigma_prop_A, sigma_prop_rho, sigma_mom_V, delta, L, A_init, rho_init, mu_init, V_init, size, diag_V):
+    
+    
+    
+    p = thisLMC_MN.shape[0] # nb of lines/types 
+    n = thisLMC_MN.shape[1] # nb of columns/locations
+
+    ## chain containers
+    
+    A_mcmc = np.zeros(shape=(size,p,p))
+    rho_mcmc = np.zeros(shape=(size,p))
+    mu_mcmc = np.zeros(shape=(size,p))
+    
+    if diag_V:
+        V_mcmc = np.zeros(shape=(size,p,n))
+    
+    ## initial state
+    
+    A_mcmc[0] = A_init 
+    rho_mcmc[0] = rho_init
+    mu_mcmc[0] = mu_init
+    
+    if diag_V:
+        V_mcmc[0] = V_init
+    
+    ## current state
+    
+    Rinv_current = np.array([np.linalg.inv(covMatrix(locs,locs,rho)) for rho in rho_init])
+    # detRinv_current = np.array([np.linalg.det(R) for R in Rinv_current])
+    
+    A_current = A_init
+    
+    V_current = V_init
+    
+    ind_n = np.ones(n)
+    centeredV_current = V_current - np.outer(mu_init,ind_n)
+    
+    state = 1
+    
+    while state<size:
+        
+        V_current = V_move(sigma_mom_V,p,n,delta,L,V_current,thisLMC_MN,Rinv_current,A_current,mu_mcmc[state-1]) 
+        
+        if diag_V:
+            V_mcmc[state] = V_current
+        
+        centeredV_current = V_current - np.outer(mu_mcmc[state-1],ind_n)
+        
+        for j in range(p):
+            
+            A_current[j] = A_move(sigma_prior_A, A_current[j], np.linalg.inv(A_current)[:,j], n, p, centeredV_current, Rinv_current[j], sigma_prop_A)
+            
+        
+        A_mcmc[state] = A_current
+        
+        for j in range(p):
+            
+            rho_mcmc[state,j], Rinv_current[j] = rho_move(A_current[j], centeredV_current, Rinv_current[j], rho_mcmc[state-1,j], alpha_prior, beta_prior, sigma_prop_rho, locs)
+        
+            
+        mu_mcmc[state] = mu_move(A_current, n, p, Rinv_current, m_prior, sigma_prior_mu, V_current)
+        
+
+        
+        state+=1
+        # print(state)
+
+    if diag_V:
+        return(A_mcmc, rho_mcmc, mu_mcmc, V_mcmc)
+    else: 
+        return(A_mcmc, rho_mcmc, mu_mcmc, 0)
 
 
 
