@@ -260,6 +260,44 @@ def MCMC_LMC_MN(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, sigma_
         return(A_mcmc, rho_mcmc, mu_mcmc, 0)
 
 
+def b(n):
+    if n == 0:
+        return(1)
+    else:
+        return(0.5)
+    
+def birthUpdate(Rinv,r,Rprime):
+    
+    n = Rinv.shape[0]
+    
+    U = np.zeros(shape = (n+1,n+1))
+    
+    Rm1r = Rinv @ r
+    u = 1/(Rprime - Rm1r@r)
+    uRM1r = -u*Rm1r
+    
+    U[n,n] = u
+    U[:-1,n] = uRM1r
+    U[n,:-1] = uRM1r
+    U[:-1,:-1] = Rinv - np.outer(Rm1r,uRM1r)
+    
+    return(U)
+
+def deathUpdate(Rninv,r,i):
+
+    n = Rninv.shape[0]
+    
+    ind = [x for x in range(n) if x!=i]
+
+    U = np.zeros(shape=(n,2))
+    U[ind,1] = r
+    U[i,0] = 1
+    V = np.transpose(U)[::-1]
+    
+    
+    Rnm1U = Rninv@U
+    return((Rninv + Rnm1U@np.linalg.inv(np.identity(2) - V@Rnm1U)@V@Rninv)[ind][:,ind])
+
 
 def locs_move():
     
