@@ -8,7 +8,10 @@ Created on Tue May 17 22:14:30 2022
 import numpy as np
 from numpy import random
 from scipy.spatial import distance_matrix
+from scipy.stats import gamma
 from GP import mexpit_col
+from GP import rCondLMC
+from GP import expCorr
 
 
 
@@ -299,84 +302,180 @@ def deathUpdate(Rninv,r,i):
     return((Rninv + Rnm1U@np.linalg.inv(np.identity(2) - V@Rnm1U)@V@Rninv)[ind][:,ind])
 
 
-def locs_move():
+def birthLoc(A, rhos, ntot, nthin, mu, locs_current, Rinvs, LMC_MN_current, lam, index, nlocs):
     
+    p = A.shape[0]
     
+    x_new = random.uniform(size=2)
     
-    return(0)
+    ind_ntot = np.ones(ntot)
+    
+    corrFuncs = np.array([expCorr(rho) for rho in rhos])
+    
+    V_new, rs, Rprimes = rCondLMC(np.linalg.inv(A), corrFuncs, np.outer(mu,ind_ntot), mu, locs_current, x_new, Rinvs, LMC_MN_current)
+    
+    if random.uniform() < lam/(ntot+1)*(1-b(nthin+1))/b(nthin)/(1+np.sum(np.exp(V_new))):
+        
+        locs_current[nlocs] = x_new
+        LMC_MN_current[:,nlocs] = V_new
+        
+        index.append(nlocs)
+        nlocs += 1
+        
+        
+        Rinvs = np.array([ birthUpdate(Rinvs[j],rs[j],Rprimes[j]) for j in range(p)])
+        
+        nthin += 1 
+        ntot += 1
+        
+        
+        return(nthin, ntot, nlocs)
+    else:
+        return(nthin, ntot, nlocs)
+   
+def deathLoc(A, rhos, ntot, nthin, locs_current, Rinvs, LMC_MN_current, lam, index, nlocs):
+    
+    i = random.randint(nthin)
+    nobs = ntot - nthin
+    p = A.shape[0]
+    
+    V_del = LMC_MN_current[:,index[nobs+i]]
+    
+    if random.uniform() < ntot/lam * (1+np.sum(np.exp(V_del))) * b(nthin-1)/(1-b(nthin)):
+        
+        
+        oldLoc = locs_current[nobs + i]
+        
+        rbase = np.exp(-distance_matrix(locs_current[index],oldLoc))
+        
+        rs = [rbase**rho for rho in rhos]
+        
+        Rinvs = np.array([ deathUpdate(Rinvs[j],rs[j],nobs + i) for j in range(p) ])
+        
+        index.pop(nobs + i)
+        
+        nthin -= 1 
+        ntot -= 1
+        
+        
+        return(nthin, ntot, nlocs)
+    
+    else:
+        return(nthin, ntot, nlocs)
 
 
-def MCMC_LMC_MN_POIS(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, sigma_prior_mu, m_prior, sigma_prop_A, sigma_prop_rho, sigma_mom_V, delta, L, A_init, rho_init, mu_init, V_init, size, diag_V):
+def locs_move(A, rhos, ntot, nthin, mu, locs_current, Rinvs, LMC_MN_current, lam, index, nlocs):
+    
+    if random.uniform() < b(nthin):
+        return(birthLoc(A, rhos, ntot, nthin, mu, locs_current, Rinvs, LMC_MN_current, lam, index, nlocs))
+    else:
+        return(deathLoc(A, rhos, ntot, nthin, locs_current, Rinvs, LMC_MN_current, lam, index, nlocs))
+    
+    
+
+
+def MCMC_LMC_MN_POIS(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, alpha_prior_lam, beta_prior_lam, sigma_prior_mu, m_prior, sigma_prop_A, sigma_prop_rho, sigma_mom_V, delta, L, nbd, A_init, rho_init, mu_init, V_init, thinLocs_init, lam_init, size, diag):
     
     
     
     p = thisLMC_MN.shape[0] # nb of lines/types 
-    n = thisLMC_MN.shape[1] # nb of columns/locations
+    nobs = locs.shape[0] # nb of columns/locations
+    
+    nthin_current = thinLocs_init.shape[0]
+    ntot_current = nobs + nthin_current
+    nlocs = ntot_current
+    
+    index_current = [x for x in range(ntot_current)]
+    
+    ## lists for parameters with variable shape
+    
+    V_list = np.zeros(shape=(p,ntot_current+size*nbd))
+    locs_list = np.zeros(shape=(ntot_current+size*nbd,2))
+    
+    Y_list = np.zeros(shape=(p,ntot_current*50))
+    
 
+    
     ## chain containers
     
     A_mcmc = np.zeros(shape=(size,p,p))
     rho_mcmc = np.zeros(shape=(size,p))
     mu_mcmc = np.zeros(shape=(size,p))
-    
-    if diag_V:
-        V_mcmc = np.zeros(shape=(size,p,n))
+    lam_mcmc = np.zeros(shape=size)
+
     
     ## initial state
+    
+    
+    V_list[:,:ntot_current] = V_init
+    
+    locs_list[:nobs] = locs
+    locs_list[nobs:ntot_current] = thinLocs_init
+    
+    Y_list[:,:nobs] = thisLMC_MN
     
     A_mcmc[0] = A_init 
     rho_mcmc[0] = rho_init
     mu_mcmc[0] = mu_init
+    lam_mcmc[0] = lam_init
     
-    if diag_V:
-        V_mcmc[0] = V_init
+    if diag:
+        
+        np.savetxt("locs0.csv", locs_list[index_current], delimiter=",")
+        np.savetxt("V0.csv", V_list[:,index_current], delimiter=",")
+        
+        
     
     ## current state
     
-    Rinv_current = np.array([np.linalg.inv(covMatrix(locs,locs,rho)) for rho in rho_init])
+
+    
+    Rinv_current = np.array([np.linalg.inv(covMatrix(locs_list[index_current],locs_list[index_current],rho)) for rho in rho_init])
     # detRinv_current = np.array([np.linalg.det(R) for R in Rinv_current])
     
     A_current = A_init
     
-    V_current = V_init
+    # V_current = V_init
     
-    ind_n = np.ones(n)
-    centeredV_current = V_current - np.outer(mu_init,ind_n)
+    # ind_ntot = np.ones(ntot_current)
+    # centeredV_current = V_list[:,index_current] - np.outer(mu_init,np.ones(ntot_current))
     
     state = 1
     
     while state<size:
         
-        V_current = V_move(sigma_mom_V,p,n,delta,L,V_current,thisLMC_MN,Rinv_current,A_current,mu_mcmc[state-1]) 
+        nthin_current, ntot_current = locs_move(A_current, rho_mcmc[state-1], ntot_current, nthin_current, mu_mcmc[state-1], locs_list, Rinv_current, V_list, lam_mcmc[state-1], index_current, nlocs)
+       
         
-        if diag_V:
-            V_mcmc[state] = V_current
+        V_list[:,index_current] = V_move(sigma_mom_V,p,ntot_current,delta,L,V_list[:,index_current],Y_list[:,:ntot_current],Rinv_current,A_current,mu_mcmc[state-1]) 
         
-        centeredV_current = V_current - np.outer(mu_mcmc[state-1],ind_n)
+        if diag:
+            np.savetxt("locs"+str(state)+".csv", locs_list[index_current], delimiter=",")
+            np.savetxt("V"+str(state)+".csv", V_list[:,index_current], delimiter=",")
+        
+        centeredV_current = V_list[:,index_current] - np.outer(mu_mcmc[state-1],np.ones(ntot_current))
         
         for j in range(p):
             
-            A_current[j] = A_move(sigma_prior_A, A_current[j], np.linalg.inv(A_current)[:,j], n, p, centeredV_current, Rinv_current[j], sigma_prop_A)
+            A_current[j] = A_move(sigma_prior_A, A_current[j], np.linalg.inv(A_current)[:,j], ntot_current, p, centeredV_current, Rinv_current[j], sigma_prop_A)
             
         
         A_mcmc[state] = A_current
         
         for j in range(p):
             
-            rho_mcmc[state,j], Rinv_current[j] = rho_move(A_current[j], centeredV_current, Rinv_current[j], rho_mcmc[state-1,j], alpha_prior, beta_prior, sigma_prop_rho, locs)
+            rho_mcmc[state,j], Rinv_current[j] = rho_move(A_current[j], centeredV_current, Rinv_current[j], rho_mcmc[state-1,j], alpha_prior, beta_prior, sigma_prop_rho, locs_list[index_current])
         
             
-        mu_mcmc[state] = mu_move(A_current, n, p, Rinv_current, m_prior, sigma_prior_mu, V_current)
+        mu_mcmc[state] = mu_move(A_current, ntot_current, p, Rinv_current, m_prior, sigma_prior_mu, V_list[:,index_current])
         
-
+        lam_mcmc[state] = gamma.rvs(alpha_prior_lam + ntot_current, scale=1/(beta_prior_lam+1))
         
         state+=1
         # print(state)
 
-    if diag_V:
-        return(A_mcmc, rho_mcmc, mu_mcmc, V_mcmc)
-    else: 
-        return(A_mcmc, rho_mcmc, mu_mcmc, 0)
+
+    return(A_mcmc, rho_mcmc, mu_mcmc, lam_mcmc)
 
 
 

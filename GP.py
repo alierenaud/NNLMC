@@ -46,7 +46,7 @@ def rCondLMC(A, corrFuncs, meanOld, meanNew, locsOld, locsNew, Rinvs, Yold):
     
     
     
-    return(A @ np.array([ Cs[j]@random.normal(size=k) + Xs_old[j]@Rinvsrs[j] for j in range(p)]) + meanNew)
+    return(A @ np.array([ Cs[j]@random.normal(size=k) + Xs_old[j]@Rinvsrs[j] for j in range(p)]) + meanNew, rs, Rs_prime)
         
         
 
