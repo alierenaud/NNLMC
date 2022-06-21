@@ -38,6 +38,14 @@ def rCondLMC(A, corrFuncs, meanOld, meanNew, locsOld, locsNew, Rinvs, Yold):
     
     Rinvsrs = np.array([ Rinvs[j]@rs[j] for j in range(p) ])
     
+    # print(Rs_prime[0] - np.transpose(rs[0])@Rinvsrs[0])
+    # print(Rs_prime[1] - np.transpose(rs[1])@Rinvsrs[1])
+    
+    # print(np.round(corrFuncs[0](locsOld,locsOld)@Rinvs[0],decimals=2))
+    # print(np.round(corrFuncs[1](locsOld,locsOld)@Rinvs[1],decimals=2))
+    
+    # print("aye")
+    
     Cs = np.array([ np.linalg.cholesky(Rs_prime[j] - np.transpose(rs[j])@Rinvsrs[j]) for j in range(p) ])
     
     Xs_old = np.linalg.inv(A)@(Yold - meanOld)

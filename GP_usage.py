@@ -16,7 +16,7 @@ from GP import multinomial_col
 
 
 
-res = 100
+res = 4
 gridLoc = makeGrid([0,1], [0,1], res)
 n = gridLoc.shape[0]
 
@@ -217,7 +217,7 @@ plt.show()
 
 #### conditional
 
-res = 99
+res = 3
 locNew = makeGrid([0,1], [0,1], res)
 k = locNew.shape[0]
 
@@ -233,7 +233,7 @@ meanNew = np.outer(mu,np.ones(k))
 p = A.shape[0]
 Rinvs = np.array([ np.linalg.inv(corrFuncs[j](gridLoc,gridLoc)) for j in range(p) ])
 
-resCondLMC = rCondLMC(A, corrFuncs, mean, meanNew, gridLoc, locNew, Rinvs, resLMC)
+resCondLMC,u,v = rCondLMC(A, corrFuncs, mean, meanNew, gridLoc, locNew, Rinvs, resLMC)
 expitCondLMC = mexpit_col(resCondLMC) ### mexpit transform
 mnCondLMC = multinomial_col(expitCondLMC) ### multinomial realization
 

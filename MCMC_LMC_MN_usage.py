@@ -20,7 +20,7 @@ from GP import multinomial_col
 
 
 
-res = 20
+res = 15
 gridLoc = makeGrid([0,1], [0,1], res)
 n = gridLoc.shape[0]
 
@@ -80,7 +80,7 @@ n = mnLMC.shape[1]
 V_init = np.outer(mu_init,np.ones(n)) + 0.1*random.normal(size=(p,n))
 # V_init = resLMC
 
-size = 4000
+size = 10000
 
 
 
@@ -141,18 +141,18 @@ plt.show()
 
 
 
-for i in range(n):
+# for i in range(n):
 
-    if mnLMC[0,i] == 1:
-        plt.plot(V_mcmc[:,0,i], color="tab:orange")
-    else:    
-        plt.plot(V_mcmc[:,0,i], color="tab:blue")
+#     if mnLMC[0,i] == 1:
+#         plt.plot(V_mcmc[:,0,i], color="tab:orange")
+#     else:    
+#         plt.plot(V_mcmc[:,0,i], color="tab:blue")
     
-    if mnLMC[1,i] == 1:
-        plt.plot(V_mcmc[:,1,i], color="tab:orange")
-    else:    
-        plt.plot(V_mcmc[:,1,i], color="tab:blue")
-    plt.show()
+#     if mnLMC[1,i] == 1:
+#         plt.plot(V_mcmc[:,1,i], color="tab:orange")
+#     else:    
+#         plt.plot(V_mcmc[:,1,i], color="tab:blue")
+#     plt.show()
 
 
 
@@ -170,29 +170,29 @@ meanLMC = np.mean(V_mcmc, axis=0)
 
 
 
-i=0
-while i < size:
+# i=0
+# while i < size:
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.set_aspect('equal')
+#     fig = plt.figure()
+#     ax = fig.add_subplot(111)
+#     ax.set_aspect('equal')
     
-    imGP = V_mcmc[i,0].reshape(res,res)
+#     imGP = V_mcmc[i,0].reshape(res,res)
     
-    x = np.linspace(0,1, res+1) 
-    y = np.linspace(0,1, res+1) 
-    X, Y = np.meshgrid(x,y) 
+#     x = np.linspace(0,1, res+1) 
+#     y = np.linspace(0,1, res+1) 
+#     X, Y = np.meshgrid(x,y) 
         
     
-    ax.set_aspect('equal')
+#     ax.set_aspect('equal')
         
-    ff = ax.pcolormesh(X,Y,imGP)
+#     ff = ax.pcolormesh(X,Y,imGP)
     
-    fig.colorbar(ff) 
+#     fig.colorbar(ff) 
     
-    plt.show()
+#     plt.show()
     
-    i+=100
+#     i+=100
 
 
 fig = plt.figure()
@@ -233,29 +233,29 @@ fig.colorbar(ff)
 
 plt.show() 
     
-i=0
-while i < size:
+# i=0
+# while i < size:
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.set_aspect('equal')
+#     fig = plt.figure()
+#     ax = fig.add_subplot(111)
+#     ax.set_aspect('equal')
     
-    imGP = V_mcmc[i,1].reshape(res,res)
+#     imGP = V_mcmc[i,1].reshape(res,res)
     
-    x = np.linspace(0,1, res+1) 
-    y = np.linspace(0,1, res+1) 
-    X, Y = np.meshgrid(x,y) 
+#     x = np.linspace(0,1, res+1) 
+#     y = np.linspace(0,1, res+1) 
+#     X, Y = np.meshgrid(x,y) 
         
     
-    ax.set_aspect('equal')
+#     ax.set_aspect('equal')
         
-    ff = ax.pcolormesh(X,Y,imGP)
+#     ff = ax.pcolormesh(X,Y,imGP)
     
-    fig.colorbar(ff) 
+#     fig.colorbar(ff) 
     
-    plt.show()
+#     plt.show()
     
-    i+=100
+#     i+=100
 
 
 fig = plt.figure()
