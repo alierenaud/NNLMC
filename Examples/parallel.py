@@ -205,50 +205,60 @@
 import numpy as np
 from scipy.stats import wishart
 import time
+import ray
 
+ray.init()
 
-# dim = 10000
+# dim = 5000
 
 # W1 = wishart.rvs(dim+5,np.identity(dim),size=1)
 # W2 = wishart.rvs(dim+5,np.identity(dim),size=1)
 # W3 = wishart.rvs(dim+5,np.identity(dim),size=1)
+# W4 = wishart.rvs(dim+5,np.identity(dim),size=1)
+# W5 = wishart.rvs(dim+5,np.identity(dim),size=1)
+# W6 = wishart.rvs(dim+5,np.identity(dim),size=1)
 
-dim = 10000
+dim = 500
 
 Ws = wishart.rvs(dim+5,np.identity(dim),size=5)
 
 def stupid(w):
-    return np.linalg.det(w@np.linalg.inv(w))
+    return(np.linalg.det(w@np.linalg.inv(w)),w)
 
 # t0 = time.time()
-# xs = stupid(W1)
-# ys = stupid(W2)
-# zs = stupid(W3)
+# x1 = stupid(W1)
+# x2 = stupid(W2)
+# x3 = stupid(W3)
+# x4 = stupid(W4)
+# x5 = stupid(W5)
+# x6 = stupid(W6)
 # print(time.time() - t0)
 
 t0 = time.time()
-xs = [stupid(w) for w in Ws]
+for i in range(10):
+    xs, ws = zip(*[stupid(w) for w in Ws])
 print(time.time() - t0)
 
-import ray
 
-ray.init(num_cpus=6)
 
 # Define the functions.
 
 @ray.remote
 def stupid(w):
-    return np.linalg.det(w@np.linalg.inv(w))
+    return(np.linalg.det(w@np.linalg.inv(w)),w)
 
 
 # t0 = time.time()
 # # Start two tasks in the background.
-# x_id = stupid.remote(W1)
-# y_id = stupid.remote(W2)
-# z_id = stupid.remote(W3)
+# x1_id = stupid.remote(W1)
+# x2_id = stupid.remote(W2)
+# x3_id = stupid.remote(W3)
+# x4_id = stupid.remote(W4)
+# x5_id = stupid.remote(W5)
+# x6_id = stupid.remote(W6)
 
 # # Block until the tasks are done and get the results.
-# x, y, z = ray.get([x_id, y_id, z_id])
+# x1p, x2p, x3p, x4p, x5p, x6p = ray.get([x1_id, x2_id, x3_id, x4_id, x5_id, x6_id])
 # print(time.time() - t0)
 
 
@@ -256,7 +266,8 @@ def stupid(w):
 
 
 t0 = time.time()
-x = ray.get([stupid.remote(w) for w in Ws])
+for i in range(10):
+    xp, wp = zip(*ray.get([stupid.remote(w) for w in Ws]))
 print(time.time() - t0)
 
 
