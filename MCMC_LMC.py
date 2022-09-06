@@ -541,7 +541,9 @@ def MCMC_LMC_MN_POIS(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, a
         if parr:
             rho_mcmc[state], Rinv_current = zip(*ray.get([rho_mover.remote(A_current[j], centeredV_current, Rinv_current[j], rho_mcmc[state-1,j], alpha_prior, beta_prior, sigma_prop_rho, locs_list[index_current]) for j in range(p)]))
         else:
-            rho_mcmc[state], Rinv_current = zip(*[rho_move(A_current[j], centeredV_current, Rinv_current[j], rho_mcmc[state-1,j], alpha_prior, beta_prior, sigma_prop_rho, locs_list[index_current]) for j in range(p)])
+            for j in range(p):
+                rho_mcmc[state,j], Rinv_current[j] = rho_move(A_current[j], centeredV_current, Rinv_current[j], rho_mcmc[state-1,j], alpha_prior, beta_prior, sigma_prop_rho, locs_list[index_current])
+        
         
         
         if diag:
