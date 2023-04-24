@@ -144,9 +144,31 @@ plt.ylim(0,1)
 fig.savefig("mplotf.pdf", bbox_inches='tight')
 plt.show()
 
+## thinned locations
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.set_aspect('equal')
+
+plt.scatter(locs[~notdeleted][:,0], locs[~notdeleted][:,1], c="silver")
 
 
+for i in range(n):
 
+    
+
+    plt.annotate(i, # this is the text
+                  locs[i], # these are the coordinates to position the label
+                  textcoords="offset points", # how to position the text
+                  xytext=(0,10), # distance from text to points (x,y)
+                  ha='center', c="none") # horizontal alignment can be left, right or center
+
+
+plt.xlim(0,1)
+plt.ylim(0,1)
+
+fig.savefig("mplotft.pdf", bbox_inches='tight')
+plt.show()
 
 
 

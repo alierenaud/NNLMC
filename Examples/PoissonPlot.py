@@ -42,7 +42,7 @@ def fct(x):
 
 
 
-res = 100
+res = 400
 gridLoc = makeGrid([0,1], [0,1], res)
 
 fig = plt.figure()
@@ -85,7 +85,7 @@ ax = fig.add_subplot(111)
 ax.set_aspect('equal')
 
 
-plt.scatter(locs[~obs][:,0], locs[~obs][:,1], c="lightgray")
+plt.scatter(locs[~obs][:,0], locs[~obs][:,1], c="silver")
 plt.scatter(locs[obs][:,0], locs[obs][:,1])
 
 
@@ -96,9 +96,41 @@ plt.ylim(0,1)
 fig.savefig("pplot3.pdf", bbox_inches='tight')
 plt.show()
 
+### observed
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.set_aspect('equal')
 
 
 
+plt.scatter(locs[obs][:,0], locs[obs][:,1])
+
+
+
+plt.xlim(0,1)
+plt.ylim(0,1)
+
+fig.savefig("pplot4.pdf", bbox_inches='tight')
+plt.show()
+
+### thinned
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.set_aspect('equal')
+
+
+plt.scatter(locs[~obs][:,0], locs[~obs][:,1], c="silver")
+
+
+
+
+plt.xlim(0,1)
+plt.ylim(0,1)
+
+fig.savefig("pplot5.pdf", bbox_inches='tight')
+plt.show()
 
 
     
