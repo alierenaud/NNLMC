@@ -81,7 +81,7 @@ ntot = n_maple + thinLocs_init.shape[0]
 V_init = np.outer(mu_init,np.ones(ntot)) + 0.1*np.random.normal(size=(p,ntot))
 
 
-size = 400
+size = 4000
 
 import time
 
