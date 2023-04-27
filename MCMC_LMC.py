@@ -547,8 +547,8 @@ def MCMC_LMC_MN_POIS(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, a
         
         
         if diag:
-            np.savetxt("locs"+str(state)+".csv", locs_list[index_current], delimiter=",")
-            np.savetxt("V"+str(state)+".csv", V_list[:,index_current], delimiter=",")
+            np.save("locs"+str(state), locs_list[index_current])
+            np.save("V"+str(state), V_list[:,index_current])
             # for j in range(p):
             #     np.savetxt(str(j)+"R"+str(state)+".csv", Rinv_current[j], delimiter=",")
             

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jun 22 20:02:32 2022
+Created on Thu Apr 27 13:12:44 2023
 
 @author: alier
 """
@@ -15,7 +15,102 @@ from GP import expCorr
 from GP import rCondLMC
 from GP import mexpit_col
 
-maple = np.loadtxt("maple.csv", delimiter=",")
+np.random.seed(3)
+
+lam = 500
+
+n = np.random.poisson(lam)
+
+locs = np.random.uniform(size=(n,2))
+
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.set_aspect('equal')
+
+
+plt.scatter(locs[:,0], locs[:,1])
+
+
+
+plt.xlim(0,1)
+plt.ylim(0,1)
+
+# fig.savefig("pplot1.pdf", bbox_inches='tight')
+plt.show()
+
+
+
+def fct(x):
+    return(np.exp(-(0.25-np.sqrt((x[:,0]-0.5)**2+(x[:,1]-0.5)**2))**2/0.005))
+
+
+obs = np.full(n,False)
+
+
+for i in range(n):
+    
+    if np.random.uniform() < fct(np.array([locs[i]])):
+    
+        obs[i] = True
+    
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.set_aspect('equal')
+
+
+plt.scatter(locs[~obs][:,0], locs[~obs][:,1], c="silver")
+plt.scatter(locs[obs][:,0], locs[obs][:,1])
+
+
+
+plt.xlim(0,1)
+plt.ylim(0,1)
+
+# fig.savefig("pplot3.pdf", bbox_inches='tight')
+plt.show()
+
+### observed
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.set_aspect('equal')
+
+
+
+plt.scatter(locs[obs][:,0], locs[obs][:,1])
+
+
+
+plt.xlim(0,1)
+plt.ylim(0,1)
+
+# fig.savefig("pplot4.pdf", bbox_inches='tight')
+plt.show()
+
+### thinned
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.set_aspect('equal')
+
+
+plt.scatter(locs[~obs][:,0], locs[~obs][:,1], c="silver")
+
+
+
+
+plt.xlim(0,1)
+plt.ylim(0,1)
+
+# fig.savefig("pplot5.pdf", bbox_inches='tight')
+plt.show()
+
+
+#### recycle maple script
+
+maple = locs[obs]
 
 n_maple = maple.shape[0]
 
@@ -38,7 +133,7 @@ m_prior = np.array([0])
 
 
 
-mean_prior_lam = 1000
+mean_prior_lam = 500
 sd_prior_lam = mean_prior_lam*0.9
 var_prior_lam = sd_prior_lam**2
 
@@ -55,13 +150,13 @@ L = 20
 # nbd = lam/10
 nbd = 20
 
-lam_init = 1000
+lam_init = 500
 
 p = 1
 
 
 
-thinLocs_init = np.random.uniform(size=(int(n_maple/p),2))
+thinLocs_init = np.random.uniform(size=(lam_init-n_maple,2))
 
 diag = True
 parr = False
@@ -91,7 +186,16 @@ t1 = time.time()
 
 total1 = t1-t0
 
+np.save("A_mcmc",A_mcmc)
+np.save("rho_mcmc",rho_mcmc)
+np.save("mu_mcmc",mu_mcmc)
+np.save("lam_mcmc",lam_mcmc)
 
+
+A_mcmc = np.load("A_mcmc.npy")
+rho_mcmc = np.load("rho_mcmc.npy")
+mu_mcmc = np.load("mu_mcmc.npy")
+lam_mcmc = np.load("lam_mcmc.npy")
 
 print(np.mean(A_mcmc, axis=0))
 
@@ -137,10 +241,11 @@ gridLoc = makeGrid([0,1], [0,1], res)
 
 resGP = np.empty(shape=(size,p,res**2))
 
-i=0
-while(i < size):
-    locs = np.loadtxt("locs"+str(i)+".csv", delimiter=",")
-    values = np.loadtxt("V"+str(i)+".csv", delimiter=",")
+i=1
+while(i <= size):
+    locs = np.load("locs"+str(i)+".npy")
+    values = np.load("V"+str(i)+".npy")
+
     # Rinvs = np.array([np.loadtxt(str(j)+"R"+str(i)+".csv", delimiter=",") for j in range(p)])
     
     #### scatter
@@ -270,83 +375,5 @@ while i<size-1:
     i+=400
 
 
-### hickory as thinned
-
-hickory = np.loadtxt("hickory.csv", delimiter=",")
-
-fig = plt.figure()
-ax = fig.add_subplot(111)
-ax.set_aspect('equal')
-
-plt.title("Lansing Woods")
-plt.scatter(hickory[:,0], hickory[:,1], c="silver", marker="$\clubsuit$", s=20, label="thinned")
-
-plt.scatter(maple[:,0], maple[:,1],c="tab:blue", marker="$\clubsuit$", s=20, label="maple")
-
-#get handles and labels
-handles, labels = plt.gca().get_legend_handles_labels()
-
-#specify order of items in legend
-order = [1,0]
-
-#add legend to plot
-plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order], bbox_to_anchor=(1, 0.8)) 
-
-plt.xlim(0,1)
-plt.ylim(0,1)
-    
-plt.savefig('hickasthin.pdf', bbox_inches='tight')
-plt.show()
-
-
-#### hickory orange
-
-fig = plt.figure()
-ax = fig.add_subplot(111)
-ax.set_aspect('equal')
-
-plt.title("Lansing Woods")
-plt.scatter(hickory[:,0], hickory[:,1], c="tab:orange", marker="$\clubsuit$", s=20, label="hickory")
-
-plt.scatter(maple[:,0], maple[:,1],c="tab:blue", marker="$\clubsuit$", s=20, label="maple")
-
-#get handles and labels
-handles, labels = plt.gca().get_legend_handles_labels()
-
-#specify order of items in legend
-order = [1,0]
-
-#add legend to plot
-plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order], bbox_to_anchor=(1, 0.8)) 
-
-plt.xlim(0,1)
-plt.ylim(0,1)
-    
-plt.savefig('hickasoran.pdf', bbox_inches='tight')
-plt.show()
-
-
-
-#### justmaple
-
-fig = plt.figure()
-ax = fig.add_subplot(111)
-ax.set_aspect('equal')
-
-plt.title("Lansing Woods")
-
-
-plt.scatter(maple[:,0], maple[:,1],c="tab:blue", marker="$\clubsuit$", s=20, label="maple")
-
-
-
-#add legend to plot
-plt.legend(bbox_to_anchor=(1, 0.8)) 
-
-plt.xlim(0,1)
-plt.ylim(0,1)
-    
-plt.savefig('justmaple.pdf', bbox_inches='tight')
-plt.show()
 
 
