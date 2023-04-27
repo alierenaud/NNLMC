@@ -242,7 +242,7 @@ gridLoc = makeGrid([0,1], [0,1], res)
 resGP = np.empty(shape=(size,p,res**2))
 
 i=1
-while(i <= size):
+while(i < size):
     locs = np.load("locs"+str(i)+".npy")
     values = np.load("V"+str(i)+".npy")
 
@@ -304,6 +304,8 @@ while(i <= size):
     i+=1
 
 
+np.save("resGP",resGP)
+
 meanGP = np.mean(resGP, axis=0)
 
 
@@ -326,18 +328,18 @@ ff = ax.pcolormesh(X,Y,imGP,cmap="Blues")
 
 fig.colorbar(ff) 
 
-plt.scatter(locs1[:,0], locs1[:,1], c="black", marker="$\clubsuit$", s=20)
+plt.scatter(locs1[:,0], locs1[:,1], c="black", s=20)
 
 plt.savefig('mapleInt.pdf', bbox_inches='tight')
 plt.show() 
 
 
-i=0
-j=0
+i=1
+j=1
 
-while i<size-1:
+while i<size:
 
-    locations = np.loadtxt("locs"+str(i)+".csv", delimiter=",")
+    locations = np.load("locs"+str(i)+".npy")
 
 
 
@@ -350,18 +352,18 @@ while i<size-1:
     ax.set_aspect('equal')
 
     plt.title("Lansing Woods")
-    plt.scatter(locsThin[:,0], locsThin[:,1], c="silver", marker="$\clubsuit$", s=20, label="thinned")
+    plt.scatter(locsThin[:,0], locsThin[:,1], c="silver", s=20)
 
-    plt.scatter(locs1[:,0], locs1[:,1],c="tab:blue", marker="$\clubsuit$", s=20, label="maple")
+    # plt.scatter(locs1[:,0], locs1[:,1],c="tab:blue", marker="$\clubsuit$", s=20, label="maple")
 
-    #get handles and labels
-    handles, labels = plt.gca().get_legend_handles_labels()
+    # #get handles and labels
+    # handles, labels = plt.gca().get_legend_handles_labels()
 
-    #specify order of items in legend
-    order = [1,0]
+    # #specify order of items in legend
+    # order = [1,0]
 
-    #add legend to plot
-    plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order], bbox_to_anchor=(1, 0.8)) 
+    # #add legend to plot
+    # plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order], bbox_to_anchor=(1, 0.8)) 
     
     
     
