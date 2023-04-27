@@ -139,8 +139,8 @@ resGP = np.empty(shape=(size,p,res**2))
 
 i=0
 while(i < size):
-    locs = np.loadtxt("locs"+str(i)+".csv", delimiter=",")
-    values = np.loadtxt("V"+str(i)+".csv", delimiter=",")
+    locs = np.load("locs"+str(i)+".npy")
+    values = np.load("V"+str(i)+".npy")
     # Rinvs = np.array([np.loadtxt(str(j)+"R"+str(i)+".csv", delimiter=",") for j in range(p)])
     
     #### scatter
@@ -230,9 +230,9 @@ plt.show()
 i=0
 j=0
 
-while i<size-1:
+while i<size:
 
-    locations = np.loadtxt("locs"+str(i)+".csv", delimiter=",")
+    locations = np.load("locs"+str(i)+".npy")
 
 
 

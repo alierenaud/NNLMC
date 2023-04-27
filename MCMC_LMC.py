@@ -505,7 +505,7 @@ def MCMC_LMC_MN_POIS(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, a
     if diag:
         
         np.save("locs0", locs_list[index_current])
-        np.save("V0.csv", V_list[:,index_current])
+        np.save("V0", V_list[:,index_current])
         # for j in range(p):
         #         np.savetxt(str(j)+"R0.csv", Rinv_current[j], delimiter=",")
     
