@@ -11,8 +11,8 @@ import numpy.linalg
 import numpy.matlib
 from scipy.spatial import distance_matrix
 
+from sklearn.gaussian_process.kernels import Matern
 
-    
 ### LMC
 
 
@@ -65,6 +65,19 @@ def expCorr(rho):
         
         return(np.exp(-distance_matrix(x,y)*rho))
     return(evalCov)
+
+
+# def expCorr(rho):
+#     def evalCov(x,y):
+        
+#         nu=0.7
+#         noise=0.1
+#         mat = Matern(length_scale=rho, nu=nu)(x,y) + (distance_matrix(x,y)==0)*noise
+        
+#         return(mat)
+#     return(evalCov)
+
+
 
 
 

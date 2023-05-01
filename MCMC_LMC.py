@@ -13,12 +13,16 @@ from GP import mexpit_col
 from GP import rCondLMC
 from GP import expCorr
 
+from sklearn.gaussian_process.kernels import Matern
+
 # import ray
 
 def covMatrix(x,y,rho):
 
         
-    return(np.exp(-distance_matrix(x,y)*rho))
+    return(expCorr(rho)(x,y))
+
+
 
 
 def A_move(sigma_prior, A_j, Ainv_j, n, p, Y, Rinv_j, sigma_prop):
@@ -358,8 +362,9 @@ def deathUpdate(Rninv,r,i):
 def birthLoc(A, rhos, ntot, nthin, mu, locs_current, Rinvs, V_list, lam, index, nlocs, parr):
     
     p = A.shape[0]
+    d = locs_current.shape[1]
     
-    x_new = random.uniform(size=2)
+    x_new = random.uniform(size=d)
     
     ind_ntot = np.ones(ntot)
     
@@ -445,6 +450,8 @@ def MCMC_LMC_MN_POIS(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, a
     
     p = thisLMC_MN.shape[0] # nb of lines/types 
     nobs = locs.shape[0] # nb of columns/locations
+    d = locs.shape[1]
+    
     
     nthin_current = thinLocs_init.shape[0]
     ntot_current = nobs + nthin_current
@@ -455,7 +462,7 @@ def MCMC_LMC_MN_POIS(thisLMC_MN, locs, sigma_prior_A, alpha_prior, beta_prior, a
     ## lists for parameters with variable shape
     
     V_list = np.zeros(shape=(p,int(ntot_current+size*nbd)))
-    locs_list = np.zeros(shape=(int(ntot_current+size*nbd),2))
+    locs_list = np.zeros(shape=(int(ntot_current+size*nbd),d))
     
     Y_list = np.zeros(shape=(p,ntot_current*50))
     
