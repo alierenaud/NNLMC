@@ -42,7 +42,7 @@ def fct(x):
 
 
 
-res = 400
+res = 100
 gridLoc = makeGrid([0,1], [0,1], res)
 
 fig = plt.figure()
